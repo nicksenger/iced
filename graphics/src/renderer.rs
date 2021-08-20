@@ -1,4 +1,5 @@
 //! Create a renderer from a [`Backend`].
+use std::cell::RefCell;
 use crate::backend::{self, Backend};
 use crate::{Primitive, Vector};
 use iced_native::layout;
@@ -13,6 +14,7 @@ pub use iced_native::renderer::Style;
 pub struct Renderer<B: Backend> {
     backend: B,
     primitives: Vec<Primitive>,
+    relayout_request: RefCell<bool>,
 }
 
 impl<B: Backend> Renderer<B> {
@@ -21,6 +23,7 @@ impl<B: Backend> Renderer<B> {
         Self {
             backend,
             primitives: Vec::new(),
+            relayout_request: RefCell::new(false),
         }
     }
 
@@ -109,6 +112,18 @@ where
 
     fn clear(&mut self) {
         self.primitives.clear();
+    }
+
+    fn relayout_requested(&self) -> bool {
+        *self.relayout_request.borrow()
+    }
+
+    fn request_relayout(&self) {
+        *self.relayout_request.borrow_mut() = true;
+    }
+
+    fn clear_relayout_request(&self) {
+        *self.relayout_request.borrow_mut() = false;
     }
 }
 

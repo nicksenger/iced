@@ -15,7 +15,7 @@ use iced_futures::futures;
 use iced_futures::futures::channel::mpsc;
 use iced_graphics::window;
 use iced_native::program::Program;
-use iced_native::{Cache, UserInterface};
+use iced_native::{Cache, Renderer, UserInterface};
 
 use std::mem::ManuallyDrop;
 
@@ -356,7 +356,9 @@ async fn run_instance<A, E, C>(
                 debug.render_started();
                 let current_viewport_version = state.viewport_version();
 
-                if viewport_version != current_viewport_version {
+                if viewport_version != current_viewport_version
+                    || renderer.relayout_requested()
+                {
                     let logical_size = state.logical_size();
 
                     debug.layout_started();
@@ -364,6 +366,7 @@ async fn run_instance<A, E, C>(
                         ManuallyDrop::into_inner(user_interface)
                             .relayout(logical_size, &mut renderer),
                     );
+                    renderer.clear_relayout_request();
                     debug.layout_finished();
 
                     debug.draw_started();
