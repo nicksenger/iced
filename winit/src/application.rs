@@ -265,7 +265,9 @@ async fn run_instance<A, E, C>(
     while let Some(event) = receiver.next().await {
         match event {
             event::Event::MainEventsCleared => {
-                if events.is_empty() && messages.is_empty() {
+                if renderer.redraw_requested() {
+                    renderer.clear_redraw_request();
+                } else if events.is_empty() && messages.is_empty() {
                     continue;
                 }
 

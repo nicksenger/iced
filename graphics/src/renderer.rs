@@ -15,6 +15,7 @@ pub struct Renderer<B: Backend> {
     backend: B,
     primitives: Vec<Primitive>,
     relayout_request: RefCell<bool>,
+    redraw_request: RefCell<bool>,
 }
 
 impl<B: Backend> Renderer<B> {
@@ -24,6 +25,7 @@ impl<B: Backend> Renderer<B> {
             backend,
             primitives: Vec::new(),
             relayout_request: RefCell::new(false),
+            redraw_request: RefCell::new(false),
         }
     }
 
@@ -124,6 +126,18 @@ where
 
     fn clear_relayout_request(&self) {
         *self.relayout_request.borrow_mut() = false;
+    }
+
+    fn redraw_requested(&self) -> bool {
+        *self.redraw_request.borrow()
+    }
+
+    fn request_redraw(&self) {
+        *self.redraw_request.borrow_mut() = true;
+    }
+
+    fn clear_redraw_request(&self) {
+        *self.redraw_request.borrow_mut() = false;
     }
 }
 

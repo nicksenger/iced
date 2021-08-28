@@ -193,7 +193,9 @@ async fn run_instance<A, E, C>(
     while let Some(event) = receiver.next().await {
         match event {
             event::Event::MainEventsCleared => {
-                if events.is_empty() && messages.is_empty() {
+                if renderer.redraw_requested() {
+                    renderer.clear_redraw_request();
+                } else if events.is_empty() && messages.is_empty() {
                     continue;
                 }
 
@@ -289,7 +291,9 @@ async fn run_instance<A, E, C>(
 
                 let current_viewport_version = state.viewport_version();
 
-                if viewport_version != current_viewport_version || renderer.relayout_requested() {
+                if viewport_version != current_viewport_version
+                    || renderer.relayout_requested()
+                {
                     let physical_size = state.physical_size();
                     let logical_size = state.logical_size();
 

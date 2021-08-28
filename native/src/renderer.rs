@@ -60,7 +60,7 @@ pub trait Renderer: Sized {
     /// Fills a [`Quad`] with the provided [`Background`].
     fn fill_quad(&mut self, quad: Quad, background: impl Into<Background>);
 
-    /// Requests that the layout be re-calculated.
+    /// Requests that the layout be re-calculated on the next draw.
     fn request_relayout(&self) {}
 
     /// Clears the request for re-layout.
@@ -68,6 +68,17 @@ pub trait Renderer: Sized {
 
     /// Returns whether or not a relayout has been requested.
     fn relayout_requested(&self) -> bool {
+        false
+    }
+
+    /// Requests that the layout be redrawn.
+    fn request_redraw(&self) {}
+
+    /// Clears the request for redraw
+    fn clear_redraw_request(&self) {}
+
+    /// Returns whether or not a redraw has been requested.
+    fn redraw_requested(&self) -> bool {
         false
     }
 }
