@@ -291,9 +291,7 @@ async fn run_instance<A, E, C>(
 
                 let current_viewport_version = state.viewport_version();
 
-                if viewport_version != current_viewport_version
-                    || renderer.relayout_requested()
-                {
+                if viewport_version != current_viewport_version {
                     let physical_size = state.physical_size();
                     let logical_size = state.logical_size();
 
@@ -302,7 +300,6 @@ async fn run_instance<A, E, C>(
                         ManuallyDrop::into_inner(user_interface)
                             .relayout(logical_size, &mut renderer),
                     );
-                    renderer.clear_relayout_request();
                     debug.layout_finished();
 
                     debug.draw_started();
