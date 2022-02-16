@@ -9,3 +9,7 @@ ouroboros = "0.13"
 [dependencies.iced_native]
 version = "0.4"
 path = "../native"
+
+[dependencies.iced_pure]
+version = "0.1"
+path = "../pure"
