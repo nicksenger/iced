@@ -47,12 +47,27 @@ impl Sandbox for Component {
 }
 
 mod numeric_input {
+    use iced::mouse::Button;
     use iced::pure::{button, row, text, text_input};
     use iced_lazy::pure::{self, Component};
     use iced_native::alignment::{self, Alignment};
     use iced_native::text;
     use iced_native::Length;
     use iced_pure::Element;
+
+    pub struct State {
+        minus_label: String,
+        plus_label: String,
+    }
+
+    impl Default for State {
+        fn default() -> Self {
+            Self {
+                minus_label: "-".to_string(),
+                plus_label: "+".to_string(),
+            }
+        }
+    }
 
     pub struct NumericInput<Message> {
         value: Option<u32>,
@@ -89,7 +104,7 @@ mod numeric_input {
     where
         Renderer: text::Renderer + 'static,
     {
-        type State = ();
+        type State = State;
         type Event = Event;
 
         fn update(
@@ -118,21 +133,12 @@ mod numeric_input {
             }
         }
 
-        fn view(&self, _state: &Self::State) -> Element<Event, Renderer> {
-            let button = |label, on_press| {
-                button(
-                    text(label)
-                        .width(Length::Fill)
-                        .height(Length::Fill)
-                        .horizontal_alignment(alignment::Horizontal::Center)
-                        .vertical_alignment(alignment::Vertical::Center),
-                )
-                .width(Length::Units(50))
-                .on_press(on_press)
-            };
-
+        fn view(&self, state: &Self::State) -> Element<Event, Renderer> {
             row()
-                .push(button("-", Event::DecrementPressed))
+                .push(ButtonWithReferenceLabel::new(
+                    state.minus_label.as_str(),
+                    Event::DecrementPressed,
+                ))
                 .push(
                     text_input(
                         "Type a number",
@@ -146,7 +152,10 @@ mod numeric_input {
                     )
                     .padding(10),
                 )
-                .push(button("+", Event::IncrementPressed))
+                .push(ButtonWithReferenceLabel::new(
+                    state.plus_label.as_str(),
+                    Event::IncrementPressed,
+                ))
                 .align_items(Alignment::Fill)
                 .spacing(10)
                 .into()
@@ -161,6 +170,37 @@ mod numeric_input {
     {
         fn from(numeric_input: NumericInput<Message>) -> Self {
             pure::component(numeric_input)
+        }
+    }
+
+    struct ButtonWithReferenceLabel<'a, Message> {
+        label: &'a str,
+        on_press: Message,
+    }
+
+    impl<'a, Message> ButtonWithReferenceLabel<'a, Message> {
+        fn new(label: &'a str, on_press: Message) -> Self {
+            Self { label, on_press }
+        }
+    }
+
+    impl<'a, Message, Renderer> From<ButtonWithReferenceLabel<'a, Message>>
+        for Element<'a, Message, Renderer>
+    where
+        Message: Clone + 'a,
+        Renderer: 'static + text::Renderer,
+    {
+        fn from(btn: ButtonWithReferenceLabel<'a, Message>) -> Self {
+            button(
+                text(btn.label)
+                    .width(Length::Fill)
+                    .height(Length::Fill)
+                    .horizontal_alignment(alignment::Horizontal::Center)
+                    .vertical_alignment(alignment::Vertical::Center),
+            )
+            .width(Length::Units(50))
+            .on_press(btn.on_press.clone())
+            .into()
         }
     }
 }
