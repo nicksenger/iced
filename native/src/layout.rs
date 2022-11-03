@@ -62,4 +62,11 @@ impl<'a> Layout<'a> {
             )
         })
     }
+
+    /// Translate the layout
+    pub fn translate(mut self, translation: Vector) -> Self {
+        self.position = self.position + translation;
+
+        self
+    }
 }

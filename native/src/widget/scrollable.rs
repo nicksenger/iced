@@ -281,24 +281,20 @@ where
         layout: Layout<'_>,
         renderer: &Renderer,
     ) -> Option<overlay::Element<'b, Message, Renderer>> {
-        self.content
-            .as_widget()
-            .overlay(
-                &mut tree.children[0],
-                layout.children().next().unwrap(),
-                renderer,
-            )
-            .map(|overlay| {
-                let bounds = layout.bounds();
-                let content_layout = layout.children().next().unwrap();
-                let content_bounds = content_layout.bounds();
-                let offset = tree
-                    .state
+        let mut content_layout = layout.children().next().unwrap();
+        content_layout = content_layout.translate(Vector::new(
+                0.0,
+                -(tree.state
                     .downcast_ref::<State>()
-                    .offset(bounds, content_bounds);
+                    .offset(layout.bounds(), content_layout.bounds())
+                    as f32),
+            ));
 
-                overlay.translate(Vector::new(0.0, -(offset as f32)))
-            })
+        self.content.as_widget().overlay(
+            &mut tree.children[0],
+            content_layout,
+            renderer,
+        )
     }
 }
 
