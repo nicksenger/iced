@@ -128,15 +128,20 @@ impl Window {
 
         let (width, height) = self.size;
 
+        let icon = self.icon.and_then(|icon| {
+            let (v, size) = icon.into_raw();
+            winit::window::Icon::from_rgba(v, size.width, size.height).ok()
+        });
+
         window_builder = window_builder
             .with_title(title)
             .with_inner_size(winit::dpi::LogicalSize { width, height })
             .with_resizable(self.resizable)
             .with_decorations(self.decorations)
             .with_transparent(self.transparent)
-            .with_window_icon(self.icon.and_then(conversion::icon))
-            .with_always_on_top(self.always_on_top)
+            .with_window_icon(icon)
             .with_visible(self.visible);
+            // .with_always_on_top(self.always_on_top);
 
         if let Some(position) = conversion::position(
             primary_monitor.as_ref(),
