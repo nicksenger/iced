@@ -464,17 +464,17 @@ async fn run_instance<A, E, C>(
 
                 redraw_pending = false;
             }
-            event::Event::PlatformSpecific(event::PlatformSpecific::MacOS(
-                event::MacOS::ReceivedUrl(url),
-            )) => {
-                use crate::core::event;
+            // event::Event::PlatformSpecific(event::PlatformSpecific::MacOS(
+            //     event::MacOS::ReceivedUrl(url),
+            // )) => {
+            //     use iced_native::event;
 
-                events.push(Event::PlatformSpecific(
-                    event::PlatformSpecific::MacOS(event::MacOS::ReceivedUrl(
-                        url,
-                    )),
-                ));
-            }
+            //     events.push(iced_native::Event::PlatformSpecific(
+            //         event::PlatformSpecific::MacOS(event::MacOS::ReceivedUrl(
+            //             url,
+            //         )),
+            //     ));
+            // }
             event::Event::UserEvent(message) => {
                 messages.push(message);
             }
@@ -794,8 +794,8 @@ pub fn run_command<A, E>(
                 window::Action::GainFocus => {
                     window.focus_window();
                 }
-                window::Action::ChangeAlwaysOnTop(on_top) => {
-                    window.set_always_on_top(on_top);
+                window::Action::ChangeAlwaysOnTop(_on_top) => {
+                    // window.set_always_on_top(on_top);
                 }
                 window::Action::FetchId(tag) => {
                     proxy

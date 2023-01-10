@@ -127,9 +127,13 @@ impl Window {
             .with_resizable(self.resizable)
             .with_decorations(self.decorations)
             .with_transparent(self.transparent)
-            .with_window_icon(self.icon.and_then(conversion::icon))
-            .with_always_on_top(self.always_on_top)
+            .with_window_icon(self.icon.and_then(|icon| {
+                let (color, size) = icon.into_raw();
+                
+                winit::window::Icon::from_rgba(color, size.width, size.height).ok()
+            }))
             .with_visible(self.visible);
+            // .with_always_on_top(self.always_on_top);
 
         if let Some(position) = conversion::position(
             primary_monitor.as_ref(),
