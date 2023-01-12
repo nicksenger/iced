@@ -4,7 +4,7 @@ use iced::widget::{
     text_input,
 };
 use iced::{Element, Length, Sandbox, Settings};
-use iced_lazy::lazy;
+use iced_lazy::Cached;
 
 use std::collections::HashSet;
 use std::hash::Hash;
@@ -155,7 +155,6 @@ impl Sandbox for App {
                 self.items.remove(&item);
             }
             Message::ItemColorChanged(item, color) => {
-                self.version = self.version.wrapping_add(1);
                 if self.items.remove(&item) {
                     self.items.insert(Item {
                         name: item.name,
@@ -167,49 +166,63 @@ impl Sandbox for App {
     }
 
     fn view(&self) -> Element<Message> {
-        let options = lazy(self.version, || {
-            let mut items: Vec<_> = self.items.iter().cloned().collect();
+        let options = Cached::new(
+            self.version,
+            |_, _| {
+                let mut items = self.items.iter().cloned().collect::<Vec<_>>();
 
-            items.sort_by(|a, b| match self.order {
-                Order::Ascending => {
-                    a.name.to_lowercase().cmp(&b.name.to_lowercase())
-                }
-                Order::Descending => {
-                    b.name.to_lowercase().cmp(&a.name.to_lowercase())
-                }
-            });
+                items.sort_by(|a, b| match self.order {
+                    Order::Ascending => {
+                        a.name.to_lowercase().cmp(&b.name.to_lowercase())
+                    }
+                    Order::Descending => {
+                        b.name.to_lowercase().cmp(&a.name.to_lowercase())
+                    }
+                });
 
-            column(
                 items
-                    .into_iter()
-                    .map(|item| {
-                        let button = button("Delete")
-                            .on_press(Message::DeleteItem(item.clone()))
-                            .style(theme::Button::Destructive);
+            },
+            |items| {
+                column(
+                    items
+                        .iter()
+                        .cloned()
+                        .map(|item| {
+                            let button = button("Delete")
+                                .on_press(Message::DeleteItem(item.clone()))
+                                .style(theme::Button::Destructive);
 
-                        row![
-                            text(&item.name)
-                                .style(theme::Text::Color(item.color.into())),
-                            horizontal_space(Length::Fill),
-                            pick_list(
-                                Color::ALL,
-                                Some(item.color),
-                                move |color| {
-                                    Message::ItemColorChanged(
-                                        item.clone(),
-                                        color,
-                                    )
-                                }
-                            ),
-                            button
-                        ]
-                        .spacing(20)
-                        .into()
-                    })
-                    .collect(),
-            )
-            .spacing(10)
-        });
+                            row![
+                                text(&item.name).style(theme::Text::Color(
+                                    self.items
+                                        .get(&item)
+                                        .map(|item| item.color)
+                                        .unwrap_or_default()
+                                        .into()
+                                )),
+                                horizontal_space(Length::Fill),
+                                pick_list(
+                                    Color::ALL,
+                                    self.items
+                                        .get(&item)
+                                        .map(|item| item.color),
+                                    move |color| {
+                                        Message::ItemColorChanged(
+                                            item.clone(),
+                                            color,
+                                        )
+                                    }
+                                ),
+                                button
+                            ]
+                            .spacing(20)
+                            .into()
+                        })
+                        .collect(),
+                )
+                .spacing(10)
+            },
+        );
 
         column![
             scrollable(options).height(Length::Fill),

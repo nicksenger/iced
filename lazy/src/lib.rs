@@ -17,11 +17,13 @@
     clippy::type_complexity
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
+mod cached;
 mod lazy;
 
 pub mod component;
 pub mod responsive;
 
+pub use cached::Cached;
 pub use component::Component;
 pub use lazy::Lazy;
 pub use responsive::Responsive;
