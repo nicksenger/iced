@@ -4,7 +4,7 @@ use iced::widget::{
     text_input,
 };
 use iced::{Element, Length, Sandbox, Settings};
-use iced_lazy::Cached;
+use iced_lazy::lazy;
 
 use std::collections::HashSet;
 use std::hash::Hash;
@@ -166,7 +166,7 @@ impl Sandbox for App {
     }
 
     fn view(&self) -> Element<Message> {
-        let options = Cached::new(
+        let options = lazy(
             self.version,
             |_, _| {
                 let mut items = self.items.iter().cloned().collect::<Vec<_>>();

@@ -17,13 +17,11 @@
     clippy::type_complexity
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
-mod cached;
 mod lazy;
 
 pub mod component;
 pub mod responsive;
 
-pub use cached::Cached;
 pub use component::Component;
 pub use lazy::Lazy;
 pub use responsive::Responsive;
@@ -33,15 +31,19 @@ mod cache;
 use iced_native::{Element, Size};
 use std::hash::Hash;
 
-pub fn lazy<'a, Message, Renderer, Dependency, View>(
+pub fn lazy<'a, Message, Renderer, Dependency, Output, View>(
     dependency: Dependency,
-    view: impl Fn() -> View + 'a,
-) -> Lazy<'a, Message, Renderer, Dependency, View>
+    computation: impl Fn(&Dependency, Option<Output>) -> Output + 'a,
+    view: impl Fn(&Output) -> View + 'a,
+) -> Lazy<'a, Message, Renderer, Dependency, Output, View>
 where
+    Message: 'a,
+    Renderer: 'a,
+    Output: 'static,
     Dependency: Hash + 'a,
-    View: Into<Element<'static, Message, Renderer>>,
+    View: Into<Element<'a, Message, Renderer>> + 'a,
 {
-    Lazy::new(dependency, view)
+    Lazy::new(dependency, computation, view)
 }
 
 /// Turns an implementor of [`Component`] into an [`Element`] that can be
