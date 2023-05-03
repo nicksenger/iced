@@ -353,6 +353,17 @@ async fn run_instance<A, E, C>(
                 window.request_redraw();
                 redraw_pending = true;
             }
+            // event::Event::PlatformSpecific(event::PlatformSpecific::MacOS(
+            //     event::MacOS::ReceivedUrl(url),
+            // )) => {
+            //     use iced_native::event;
+
+            //     events.push(iced_native::Event::PlatformSpecific(
+            //         event::PlatformSpecific::MacOS(event::MacOS::ReceivedUrl(
+            //             url,
+            //         )),
+            //     ));
+            // }
             event::Event::UserEvent(message) => {
                 messages.push(message);
             }
