@@ -3,6 +3,7 @@ use crate::{Command, Element, Renderer};
 
 mod state;
 
+use iced_futures::MaybeSend;
 pub use state::State;
 
 /// The core of a user interface application following The Elm Architecture.
@@ -11,7 +12,7 @@ pub trait Program: Sized {
     type Renderer: Renderer;
 
     /// The type of __messages__ your [`Program`] will produce.
-    type Message: std::fmt::Debug + Send;
+    type Message: std::fmt::Debug + MaybeSend;
 
     /// Handles a __message__ and updates the state of the [`Program`].
     ///
