@@ -62,6 +62,14 @@ impl<'a> Layout<'a> {
             )
         })
     }
+
+    /// Translates the [`Layout`]
+    pub fn translate(self, offset: Vector) -> Self {
+        Self {
+            position: self.position + offset,
+            ..self
+        }
+    }
 }
 
 /// Produces a [`Node`] with two children nodes one right next to each other.
