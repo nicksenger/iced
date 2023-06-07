@@ -60,25 +60,39 @@ impl Application for ProgressIndicators {
     }
 
     fn view(&self) -> Element<Message> {
-        let column = easing::EXAMPLES
-            .iter()
-            .zip(["Decelerating:", "Accelerating:", "Standard:"])
-            .fold(column![], |column, (easing, label)| {
-                column.push(
-                    row![
-                        text(label).width(150),
-                        Linear::new().easing(easing).cycle_duration(
-                            Duration::from_secs_f32(self.cycle_duration)
-                        ),
-                        Circular::new().easing(easing).cycle_duration(
-                            Duration::from_secs_f32(self.cycle_duration)
-                        )
-                    ]
-                    .align_items(iced::Alignment::Center)
-                    .spacing(20.0),
-                )
-            })
-            .spacing(20);
+        let column = [
+            &easing::EMPHASIZED,
+            &easing::EMPHASIZED_DECELERATE,
+            &easing::EMPHASIZED_ACCELERATE,
+            &easing::STANDARD,
+            &easing::STANDARD_DECELERATE,
+            &easing::STANDARD_ACCELERATE,
+        ]
+        .iter()
+        .zip([
+            "Emphasized:",
+            "Emphasized Decelerate:",
+            "Emphasized Accelerate:",
+            "Standard:",
+            "Standard Decelerate:",
+            "Standard Accelerate:",
+        ])
+        .fold(column![], |column, (easing, label)| {
+            column.push(
+                row![
+                    text(label).width(250),
+                    Linear::new().easing(easing).cycle_duration(
+                        Duration::from_secs_f32(self.cycle_duration)
+                    ),
+                    Circular::new().easing(easing).cycle_duration(
+                        Duration::from_secs_f32(self.cycle_duration)
+                    )
+                ]
+                .align_items(iced::Alignment::Center)
+                .spacing(20.0),
+            )
+        })
+        .spacing(20);
 
         container(
             column.push(
@@ -87,7 +101,7 @@ impl Application for ProgressIndicators {
                     slider(1.0..=1000.0, self.cycle_duration * 100.0, |x| {
                         Message::CycleDurationChanged(x / 100.0)
                     })
-                    .width(150.0)
+                    .width(200.0)
                     .into(),
                     text(format!("{:.2}s", self.cycle_duration)).into(),
                 ])
