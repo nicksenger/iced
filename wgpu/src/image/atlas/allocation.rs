@@ -27,10 +27,10 @@ impl Allocation {
         }
     }
 
-    pub fn layer(&self) -> usize {
+    pub fn z_position(&self) -> usize {
         match self {
-            Allocation::Partial { layer, .. } => *layer,
-            Allocation::Full { layer } => *layer,
+            Allocation::Partial { layer, .. } => *layer + 1,
+            Allocation::Full { layer } => *layer + 1,
         }
     }
 }

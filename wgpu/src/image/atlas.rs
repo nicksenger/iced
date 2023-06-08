@@ -19,7 +19,7 @@ use crate::graphics::color;
 pub struct Atlas {
     texture: wgpu::Texture,
     texture_view: wgpu::TextureView,
-    layers: Vec<Layer>,
+    layers: Vec<Layer>
 }
 
 impl Atlas {
@@ -27,7 +27,7 @@ impl Atlas {
         let extent = wgpu::Extent3d {
             width: SIZE,
             height: SIZE,
-            depth_or_array_layers: 1,
+            depth_or_array_layers: 2,
         };
 
         let texture = device.create_texture(&wgpu::TextureDescriptor {
@@ -55,7 +55,7 @@ impl Atlas {
         Atlas {
             texture,
             texture_view,
-            layers: vec![Layer::Empty],
+            layers: vec![Layer::Empty]
         }
     }
 
@@ -222,7 +222,6 @@ impl Atlas {
 
                     if let Some(region) = allocator.allocate(width, height) {
                         *layer = Layer::Busy(allocator);
-
                         return Some(Entry::Contiguous(Allocation::Partial {
                             region,
                             layer: i,
@@ -293,7 +292,7 @@ impl Atlas {
 
         let (x, y) = allocation.position();
         let Size { width, height } = allocation.size();
-        let layer = allocation.layer();
+        let layer = allocation.z_position();
 
         let extent = wgpu::Extent3d {
             width,
@@ -378,7 +377,7 @@ impl Atlas {
                     origin: wgpu::Origin3d {
                         x: 0,
                         y: 0,
-                        z: i as u32,
+                        z: i as u32 + 1,
                     },
                     aspect: wgpu::TextureAspect::default(),
                 },
@@ -388,7 +387,7 @@ impl Atlas {
                     origin: wgpu::Origin3d {
                         x: 0,
                         y: 0,
-                        z: i as u32,
+                        z: i as u32 + 1,
                     },
                     aspect: wgpu::TextureAspect::default(),
                 },

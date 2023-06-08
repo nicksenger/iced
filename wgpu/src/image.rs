@@ -520,7 +520,7 @@ struct Instance {
     _size: [f32; 2],
     _position_in_atlas: [f32; 2],
     _size_in_atlas: [f32; 2],
-    _layer: u32,
+    _z_position: u32,
 }
 
 impl Instance {
@@ -582,7 +582,7 @@ fn add_instance(
 ) {
     let (x, y) = allocation.position();
     let Size { width, height } = allocation.size();
-    let layer = allocation.layer();
+    let layer = allocation.z_position();
 
     let instance = Instance {
         _position: position,
@@ -595,7 +595,7 @@ fn add_instance(
             (width as f32 - 1.0) / atlas::SIZE as f32,
             (height as f32 - 1.0) / atlas::SIZE as f32,
         ],
-        _layer: layer as u32,
+        _z_position: layer as u32,
     };
 
     instances.push(instance);
