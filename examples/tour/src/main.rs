@@ -105,20 +105,20 @@ impl Steps {
     fn new() -> Steps {
         Steps {
             steps: vec![
-                Step::Welcome,
-                Step::Slider { value: 50 },
-                Step::RowsAndColumns {
-                    layout: Layout::Row,
-                    spacing: 20,
-                },
-                Step::Text {
-                    size: 30,
-                    color: Color::BLACK,
-                },
-                Step::Radio { selection: None },
-                Step::Toggler {
-                    can_continue: false,
-                },
+                // Step::Welcome,
+                // Step::Slider { value: 50 },
+                // Step::RowsAndColumns {
+                //     layout: Layout::Row,
+                //     spacing: 20,
+                // },
+                // Step::Text {
+                //     size: 30,
+                //     color: Color::BLACK,
+                // },
+                // Step::Radio { selection: None },
+                // Step::Toggler {
+                //     can_continue: false,
+                // },
                 Step::Image { width: 300 },
                 Step::Scrollable,
                 Step::TextInput {
@@ -644,7 +644,7 @@ fn ferris<'a>(width: u16) -> Container<'a, StepMessage> {
         // This should go away once we unify resource loading on native
         // platforms
         if cfg!(target_arch = "wasm32") {
-            image("tour/images/ferris.png")
+            image(image::Handle::from_memory(include_bytes!("../images/ferris.png")))
         } else {
             image(format!("{}/images/ferris.png", env!("CARGO_MANIFEST_DIR")))
         }
