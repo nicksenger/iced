@@ -89,6 +89,11 @@ impl core::text::Paragraph for Paragraph {
         );
 
         let min_bounds = text::measure(&buffer);
+        buffer.set_size(
+            font_system.raw(),
+            min_bounds.width.ceil(),
+            min_bounds.height.ceil(),
+        );
 
         Self(Some(Arc::new(Internal {
             buffer,

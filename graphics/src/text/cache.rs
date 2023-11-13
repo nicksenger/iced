@@ -63,6 +63,12 @@ impl Cache {
             );
 
             let bounds = text::measure(&buffer);
+            buffer.set_size(
+                font_system,
+                bounds.width.ceil(),
+                bounds.height.ceil(),
+            );
+            
             let _ = entry.insert(Entry {
                 buffer,
                 min_bounds: bounds,
