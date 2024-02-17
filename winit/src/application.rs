@@ -299,8 +299,8 @@ async fn run_instance<A, E, C>(
     let mut cache = user_interface::Cache::default();
     let mut surface = compositor.create_surface(
         window.clone(),
-        physical_size.width,
-        physical_size.height,
+        physical_size.width.max(1),
+        physical_size.height.max(1),
     );
     let mut should_exit = false;
 

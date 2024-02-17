@@ -20,7 +20,7 @@ const INITIAL_INSTANCES: usize = 2_000;
 #[derive(Debug)]
 pub struct Pipeline {
     solid: solid::Pipeline,
-    gradient: gradient::Pipeline,
+    // gradient: gradient::Pipeline,
     constant_layout: wgpu::BindGroupLayout,
     layers: Vec<Layer>,
     prepare_layer: usize,
@@ -47,7 +47,7 @@ impl Pipeline {
 
         Self {
             solid: solid::Pipeline::new(device, format, &constant_layout),
-            gradient: gradient::Pipeline::new(device, format, &constant_layout),
+            // gradient: gradient::Pipeline::new(device, format, &constant_layout),
             layers: Vec::new(),
             prepare_layer: 0,
             constant_layout,
@@ -103,14 +103,14 @@ impl Pipeline {
                         solid_offset += count;
                     }
                     Kind::Gradient => {
-                        self.gradient.render(
-                            render_pass,
-                            &layer.constants,
-                            &layer.gradient,
-                            gradient_offset..(gradient_offset + count),
-                        );
+                        // self.gradient.render(
+                        //     render_pass,
+                        //     &layer.constants,
+                        //     &layer.gradient,
+                        //     gradient_offset..(gradient_offset + count),
+                        // );
 
-                        gradient_offset += count;
+                        // gradient_offset += count;
                     }
                 }
             }
