@@ -128,7 +128,7 @@ bytemuck = { version = "1.0", features = ["derive"] }
 cosmic-text = "0.10"
 futures = "0.3"
 glam = "0.25"
-glyphon = "0.5"
+glyphon = { git = "https://github.com/nicksenger/glyphon", branch = "fix/allow-webgl" }
 guillotiere = "0.6"
 half = "2.2"
 image = "0.24"
