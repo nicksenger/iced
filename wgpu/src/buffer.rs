@@ -61,16 +61,29 @@ impl<T: bytemuck::Pod> Buffer<T> {
     /// Returns the size of the written bytes.
     pub fn write(
         &mut self,
-        queue: &wgpu::Queue,
+        device: &wgpu::Device,
+        encoder: &mut wgpu::CommandEncoder,
+        belt: &mut wgpu::util::StagingBelt,
         offset: usize,
         contents: &[T],
     ) -> usize {
         let bytes: &[u8] = bytemuck::cast_slice(contents);
-        queue.write_buffer(&self.raw, offset as u64, bytes);
+        let len = bytes.len();
 
-        self.offsets.push(offset as u64);
+        if len > 0 {
+            belt.write_buffer(
+                encoder,
+                &self.raw,
+                offset as u64,
+                (bytes.len() as u64).try_into().expect("Non-empty write"),
+                device,
+            )
+            .copy_from_slice(bytes);
+    
+            self.offsets.push(offset as u64);
+        }
 
-        bytes.len()
+        len
     }
 
     pub fn slice(

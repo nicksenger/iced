@@ -29,6 +29,8 @@ pub struct Backend {
     pipeline_storage: pipeline::Storage,
     #[cfg(any(feature = "image", feature = "svg"))]
     image_pipeline: image::Pipeline,
+    staging_belt: wgpu::util::StagingBelt,
+    text_viewport: text::Viewport,
 }
 
 impl Backend {
@@ -40,6 +42,7 @@ impl Backend {
         format: wgpu::TextureFormat,
     ) -> Self {
         let text_pipeline = text::Pipeline::new(device, queue, format);
+        let text_viewport = text_pipeline.create_viewport(device);
         let quad_pipeline = quad::Pipeline::new(device, format);
         let triangle_pipeline =
             triangle::Pipeline::new(device, format, settings.antialiasing);
@@ -55,6 +58,8 @@ impl Backend {
 
             #[cfg(any(feature = "image", feature = "svg"))]
             image_pipeline,
+            staging_belt: wgpu::util::StagingBelt::new(1024 * 100),
+            text_viewport,
         }
     }
 
@@ -97,7 +102,10 @@ impl Backend {
             target_size,
             transformation,
             &layers,
+            viewport,
         );
+
+        self.staging_belt.finish();
 
         self.render(
             device,
@@ -117,17 +125,25 @@ impl Backend {
         self.image_pipeline.end_frame();
     }
 
+    ///
+    pub fn recall(&mut self) {
+        self.staging_belt.recall();
+    }
+
     fn prepare(
         &mut self,
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         format: wgpu::TextureFormat,
-        _encoder: &mut wgpu::CommandEncoder,
+        encoder: &mut wgpu::CommandEncoder,
         scale_factor: f32,
         target_size: Size<u32>,
         transformation: Transformation,
         layers: &[Layer<'_>],
+        viewport: &Viewport,
     ) {
+        self.text_viewport.update(queue, viewport.physical_size());
+
         for layer in layers {
             let bounds = (layer.bounds * scale_factor).snap();
 
@@ -138,7 +154,8 @@ impl Backend {
             if !layer.quads.is_empty() {
                 self.quad_pipeline.prepare(
                     device,
-                    queue,
+                    encoder,
+                    &mut self.staging_belt,
                     &layer.quads,
                     transformation,
                     scale_factor,
@@ -151,7 +168,8 @@ impl Backend {
 
                 self.triangle_pipeline.prepare(
                     device,
-                    queue,
+                    encoder,
+                    &mut self.staging_belt,
                     &layer.meshes,
                     scaled,
                 );
@@ -165,8 +183,8 @@ impl Backend {
 
                     self.image_pipeline.prepare(
                         device,
-                        queue,
-                        _encoder,
+                        encoder,
+                        &mut self.staging_belt,
                         &layer.images,
                         scaled,
                         scale_factor,
@@ -178,10 +196,11 @@ impl Backend {
                 self.text_pipeline.prepare(
                     device,
                     queue,
+                    &self.text_viewport,
+                    encoder,
                     &layer.text,
                     layer.bounds,
                     scale_factor,
-                    target_size,
                 );
             }
 
@@ -316,8 +335,12 @@ impl Backend {
             }
 
             if !layer.text.is_empty() {
-                self.text_pipeline
-                    .render(text_layer, bounds, &mut render_pass);
+                self.text_pipeline.render(
+                    &self.text_viewport,
+                    text_layer,
+                    bounds,
+                    &mut render_pass,
+                );
 
                 text_layer += 1;
             }

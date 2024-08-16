@@ -11,6 +11,7 @@ use std::sync::Arc;
 
 #[allow(missing_debug_implementations)]
 pub struct Pipeline {
+    state: glyphon::Cache,
     renderers: Vec<glyphon::TextRenderer>,
     atlas: glyphon::TextAtlas,
     prepare_layer: usize,
@@ -23,18 +24,23 @@ impl Pipeline {
         queue: &wgpu::Queue,
         format: wgpu::TextureFormat,
     ) -> Self {
+        let state = glyphon::Cache::new(device);
+        let atlas = glyphon::TextAtlas::with_color_mode(
+            device,
+            queue,
+            &state,
+            format,
+            if color::GAMMA_CORRECTION {
+                glyphon::ColorMode::Accurate
+            } else {
+                glyphon::ColorMode::Web
+            },
+        );
+
         Pipeline {
+            state,
             renderers: Vec::new(),
-            atlas: glyphon::TextAtlas::with_color_mode(
-                device,
-                queue,
-                format,
-                if color::GAMMA_CORRECTION {
-                    glyphon::ColorMode::Accurate
-                } else {
-                    glyphon::ColorMode::Web
-                },
-            ),
+            atlas,
             prepare_layer: 0,
             cache: RefCell::new(Cache::new()),
         }
@@ -53,10 +59,11 @@ impl Pipeline {
         &mut self,
         device: &wgpu::Device,
         queue: &wgpu::Queue,
+        viewport: &Viewport,
+        encoder: &mut wgpu::CommandEncoder,
         sections: &[Text<'_>],
         layer_bounds: Rectangle,
         scale_factor: f32,
-        target_size: Size<u32>,
     ) {
         if self.renderers.len() <= self.prepare_layer {
             self.renderers.push(glyphon::TextRenderer::new(
@@ -262,12 +269,10 @@ impl Pipeline {
         let result = renderer.prepare(
             device,
             queue,
+            encoder,
             font_system,
             &mut self.atlas,
-            glyphon::Resolution {
-                width: target_size.width,
-                height: target_size.height,
-            },
+            &viewport.0,
             text_areas,
             &mut glyphon::SwashCache::new(),
         );
@@ -286,6 +291,7 @@ impl Pipeline {
 
     pub fn render<'a>(
         &'a self,
+        viewport: &'a Viewport,
         layer: usize,
         bounds: Rectangle<u32>,
         render_pass: &mut wgpu::RenderPass<'a>,
@@ -300,8 +306,12 @@ impl Pipeline {
         );
 
         renderer
-            .render(&self.atlas, render_pass)
+            .render(&self.atlas, &viewport.0, render_pass)
             .expect("Render text");
+    }
+
+    pub fn create_viewport(&self, device: &wgpu::Device) -> Viewport {
+        Viewport(glyphon::Viewport::new(device, &self.state))
     }
 
     pub fn end_frame(&mut self) {
@@ -309,5 +319,19 @@ impl Pipeline {
         self.cache.get_mut().trim();
 
         self.prepare_layer = 0;
+    }
+}
+
+pub struct Viewport(glyphon::Viewport);
+
+impl Viewport {
+    pub fn update(&mut self, queue: &wgpu::Queue, resolution: Size<u32>) {
+        self.0.update(
+            queue,
+            glyphon::Resolution {
+                width: resolution.width,
+                height: resolution.height,
+            },
+        );
     }
 }
