@@ -1,4 +1,7 @@
 //! Build interactive cross-platform applications.
+use crate::core::text;
+use crate::graphics::compositor;
+use crate::shell::application;
 use crate::{Command, Element, Executor, Settings, Subscription};
 
 pub use crate::style::application::{Appearance, StyleSheet};
@@ -106,6 +109,9 @@ pub trait Application: Sized {
     /// The theme of your [`Application`].
     type Theme: Default + StyleSheet;
 
+    /// The renderer of your [`Application`].
+    type Renderer: text::Renderer + compositor::Default;
+
     /// The data needed to initialize your [`Application`].
     type Flags;
 
@@ -139,7 +145,7 @@ pub trait Application: Sized {
     /// Returns the widgets to display in the [`Application`].
     ///
     /// These widgets can produce __messages__ based on user interaction.
-    fn view(&self) -> Element<'_, Self::Message, Self::Theme, crate::Renderer>;
+    fn view(&self) -> Element<'_, Self::Message, Self::Theme, Self::Renderer>;
 
     /// Returns the current [`Theme`] of the [`Application`].
     ///
@@ -194,7 +200,7 @@ pub trait Application: Sized {
         Self: 'static,
     {
         #[allow(clippy::needless_update)]
-        let renderer_settings = crate::renderer::Settings {
+        let renderer_settings = crate::graphics::Settings {
             default_font: settings.default_font,
             default_text_size: settings.default_text_size,
             antialiasing: if settings.antialiasing {
@@ -202,13 +208,13 @@ pub trait Application: Sized {
             } else {
                 None
             },
-            ..crate::renderer::Settings::default()
+            ..crate::graphics::Settings::default()
         };
 
         Ok(crate::shell::application::run::<
             Instance<Self>,
             Self::Executor,
-            crate::renderer::Compositor,
+            <Self::Renderer as compositor::Default>::Compositor,
         >(settings.into(), renderer_settings)?)
     }
 }
@@ -221,7 +227,7 @@ where
 {
     type Message = A::Message;
     type Theme = A::Theme;
-    type Renderer = crate::Renderer;
+    type Renderer = A::Renderer;
 
     fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
         self.0.update(message)
@@ -232,7 +238,7 @@ where
     }
 }
 
-impl<A> crate::shell::Application for Instance<A>
+impl<A> application::Application for Instance<A>
 where
     A: Application,
 {

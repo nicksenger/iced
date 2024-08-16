@@ -8,7 +8,8 @@ use crate::core::mouse;
 use crate::core::renderer;
 use crate::core::widget::Tree;
 use crate::core::{
-    ContentFit, Element, Layout, Length, Rectangle, Size, Vector, Widget,
+    ContentFit, Element, Layout, Length, Point, Radians, Rectangle, Size,
+    Vector, Widget,
 };
 
 use std::hash::Hash;
@@ -93,7 +94,7 @@ where
 {
     // The raw w/h of the underlying image
     let image_size = {
-        let Size { width, height } = renderer.dimensions(handle);
+        let Size { width, height } = renderer.measure_image(handle);
 
         Size::new(width as f32, height as f32)
     };
@@ -130,25 +131,41 @@ pub fn draw<Renderer, Handle>(
     Renderer: image::Renderer<Handle = Handle>,
     Handle: Clone + Hash,
 {
-    let Size { width, height } = renderer.dimensions(handle);
+    let Size { width, height } = renderer.measure_image(handle);
     let image_size = Size::new(width as f32, height as f32);
+    let rotated_size = image_size; // TODO
 
     let bounds = layout.bounds();
-    let adjusted_fit = content_fit.fit(image_size, bounds.size());
+    let adjusted_fit = content_fit.fit(rotated_size, bounds.size());
+
+    let scale = Vector::new(
+        adjusted_fit.width / rotated_size.width,
+        adjusted_fit.height / rotated_size.height,
+    );
+
+    let final_size = image_size * scale;
+
+    let position = match content_fit {
+        ContentFit::None => Point::new(
+            bounds.x + (rotated_size.width - adjusted_fit.width) / 2.0,
+            bounds.y + (rotated_size.height - adjusted_fit.height) / 2.0,
+        ),
+        _ => Point::new(
+            bounds.center_x() - final_size.width / 2.0,
+            bounds.center_y() - final_size.height / 2.0,
+        ),
+    };
+
+    let drawing_bounds = Rectangle::new(position, final_size);
 
     let render = |renderer: &mut Renderer| {
-        let offset = Vector::new(
-            (bounds.width - adjusted_fit.width).max(0.0) / 2.0,
-            (bounds.height - adjusted_fit.height).max(0.0) / 2.0,
+        renderer.draw_image(
+            handle.clone(),
+            filter_method,
+            drawing_bounds,
+            Radians(0.0),
+            1.0,
         );
-
-        let drawing_bounds = Rectangle {
-            width: adjusted_fit.width,
-            height: adjusted_fit.height,
-            ..bounds
-        };
-
-        renderer.draw(handle.clone(), filter_method, drawing_bounds + offset);
     };
 
     if adjusted_fit.width > bounds.width || adjusted_fit.height > bounds.height

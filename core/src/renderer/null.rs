@@ -5,8 +5,6 @@ use crate::{
     Background, Color, Font, Pixels, Point, Rectangle, Size, Transformation,
 };
 
-use std::borrow::Cow;
-
 /// A renderer that does nothing.
 ///
 /// It can be useful if you are writing tests!
@@ -21,14 +19,13 @@ impl Null {
 }
 
 impl Renderer for Null {
-    fn with_layer(&mut self, _bounds: Rectangle, _f: impl FnOnce(&mut Self)) {}
+    fn start_layer(&mut self, _bounds: Rectangle) {}
 
-    fn with_transformation(
-        &mut self,
-        _transformation: Transformation,
-        _f: impl FnOnce(&mut Self),
-    ) {
-    }
+    fn end_layer(&mut self) {}
+
+    fn start_transformation(&mut self, _transformation: Transformation) {}
+
+    fn end_transformation(&mut self) {}
 
     fn clear(&mut self) {}
 
@@ -57,8 +54,6 @@ impl text::Renderer for Null {
         Pixels(16.0)
     }
 
-    fn load_font(&mut self, _font: Cow<'static, [u8]>) {}
-
     fn fill_paragraph(
         &mut self,
         _paragraph: &Self::Paragraph,
@@ -79,7 +74,7 @@ impl text::Renderer for Null {
 
     fn fill_text(
         &mut self,
-        _paragraph: Text<'_, Self::Font>,
+        _paragraph: Text,
         _position: Point,
         _color: Color,
         _clip_bounds: Rectangle,
@@ -90,11 +85,11 @@ impl text::Renderer for Null {
 impl text::Paragraph for () {
     type Font = Font;
 
-    fn with_text(_text: Text<'_, Self::Font>) -> Self {}
+    fn with_text(_text: Text<&str>) -> Self {}
 
     fn resize(&mut self, _new_bounds: Size) {}
 
-    fn compare(&self, _text: Text<'_, Self::Font>) -> text::Difference {
+    fn compare(&self, _text: Text<&str>) -> text::Difference {
         text::Difference::None
     }
 

@@ -162,6 +162,7 @@ where
     type Flags = ();
     type Message = T::Message;
     type Theme = Theme;
+    type Renderer = crate::renderer::Renderer;
 
     fn new(_flags: ()) -> (Self, Command<T::Message>) {
         (T::new(), Command::none())

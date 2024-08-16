@@ -147,7 +147,9 @@ where
         renderer.with_translation(
             bounds.position() - Point::ORIGIN,
             |renderer| {
-                renderer.draw(vec![geometry]);
+                use crate::graphics::geometry::Renderer as _;
+
+                renderer.draw_geometry(geometry);
             },
         );
     }
@@ -170,7 +172,7 @@ where
 pub struct Data {
     contents: Vec<qrcode::Color>,
     width: usize,
-    cache: canvas::Cache,
+    cache: canvas::Cache<Renderer>,
 }
 
 impl Data {

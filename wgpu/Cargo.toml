@@ -32,6 +32,8 @@ glyphon.workspace = true
 guillotiere.workspace = true
 log.workspace = true
 once_cell.workspace = true
+rustc-hash.workspace = true
+thiserror.workspace = true
 wgpu.workspace = true
 
 lyon.workspace = true
@@ -39,6 +41,3 @@ lyon.optional = true
 
 resvg.workspace = true
 resvg.optional = true
-
-tracing.workspace = true
-tracing.optional = true

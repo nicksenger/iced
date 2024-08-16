@@ -7,7 +7,6 @@ pub use event::Event;
 pub use program::Program;
 
 pub use crate::graphics::geometry::*;
-pub use crate::renderer::geometry::*;
 
 use crate::core;
 use crate::core::layout::{self, Layout};
@@ -20,6 +19,10 @@ use crate::core::{
 use crate::graphics::geometry;
 
 use std::marker::PhantomData;
+
+/// The geometry supported by a renderer.
+pub type Geometry<Renderer = crate::Renderer> =
+    <Renderer as geometry::Renderer>::Geometry;
 
 /// A widget capable of drawing 2D graphics.
 ///
@@ -210,9 +213,12 @@ where
         renderer.with_transformation(
             Transformation::translate(bounds.x, bounds.y),
             |renderer| {
-                renderer.draw(
-                    self.program.draw(state, renderer, theme, bounds, cursor),
-                );
+                let layers =
+                    self.program.draw(state, renderer, theme, bounds, cursor);
+
+                for layer in layers {
+                    renderer.draw_geometry(layer);
+                }
             },
         );
     }

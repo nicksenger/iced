@@ -12,7 +12,9 @@ use crate::core::widget::operation;
 use crate::core::window;
 use crate::core::{Event, Size};
 use crate::futures::futures;
+use crate::futures::futures::executor;
 use crate::futures::{Executor, Runtime, Subscription};
+use crate::graphics;
 use crate::graphics::compositor::{self, Compositor};
 use crate::runtime::clipboard;
 use crate::runtime::program::Program;
@@ -99,7 +101,7 @@ where
 /// settings.
 pub fn run<A, E, C>(
     settings: Settings<A::Flags>,
-    compositor_settings: C::Settings,
+    graphics_settings: graphics::Settings,
 ) -> Result<(), Error>
 where
     A: Application + 'static,
@@ -188,13 +190,12 @@ where
         };
     }
 
-    let compositor = C::new(compositor_settings, window.clone())?;
-    let mut renderer = compositor.create_renderer();
+    let mut compositor =
+        executor::block_on(C::new(graphics_settings, window.clone()))?;
+    let renderer = compositor.create_renderer();
 
     for font in settings.fonts {
-        use crate::core::text::Renderer;
-
-        renderer.load_font(font);
+        compositor.load_font(font);
     }
 
     let (mut event_sender, event_receiver) = mpsc::unbounded();
@@ -903,10 +904,7 @@ pub fn run_command<A, C, E>(
                 *cache = current_cache;
             }
             command::Action::LoadFont { bytes, tagger } => {
-                use crate::core::text::Renderer;
-
-                // TODO: Error handling (?)
-                renderer.load_font(bytes);
+                compositor.load_font(bytes);
 
                 proxy
                     .send_event(tagger(Ok(())))

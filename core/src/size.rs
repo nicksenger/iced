@@ -1,4 +1,4 @@
-use crate::Vector;
+use crate::{Radians, Vector};
 
 /// An amount of space in 2 dimensions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -51,6 +51,19 @@ impl Size {
             height: self.height + other.height,
         }
     }
+
+    /// Rotates the given [`Size`] and returns the minimum [`Size`]
+    /// containing it.
+    pub fn rotate(self, rotation: Radians) -> Size {
+        let radians = f32::from(rotation);
+
+        Size {
+            width: (self.width * radians.cos()).abs()
+                + (self.height * radians.sin()).abs(),
+            height: (self.width * radians.sin()).abs()
+                + (self.height * radians.cos()).abs(),
+        }
+    }
 }
 
 impl From<[f32; 2]> for Size {
@@ -93,6 +106,34 @@ impl std::ops::Sub for Size {
         Size {
             width: self.width - rhs.width,
             height: self.height - rhs.height,
+        }
+    }
+}
+
+impl<T> std::ops::Mul<T> for Size<T>
+where
+    T: std::ops::Mul<Output = T> + Copy,
+{
+    type Output = Size<T>;
+
+    fn mul(self, rhs: T) -> Self::Output {
+        Size {
+            width: self.width * rhs,
+            height: self.height * rhs,
+        }
+    }
+}
+
+impl<T> std::ops::Mul<Vector<T>> for Size<T>
+where
+    T: std::ops::Mul<Output = T> + Copy,
+{
+    type Output = Size<T>;
+
+    fn mul(self, scale: Vector<T>) -> Self::Output {
+        Size {
+            width: self.width * scale.x,
+            height: self.height * scale.y,
         }
     }
 }

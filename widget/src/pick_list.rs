@@ -748,7 +748,7 @@ pub fn draw<'a, T, Theme, Renderer>(
 
         renderer.fill_text(
             Text {
-                content: &code_point.to_string(),
+                content: code_point.to_string(),
                 size,
                 line_height,
                 font,
@@ -776,7 +776,7 @@ pub fn draw<'a, T, Theme, Renderer>(
 
         renderer.fill_text(
             Text {
-                content: label,
+                content: label.to_string(),
                 size: text_size,
                 line_height: text_line_height,
                 font,

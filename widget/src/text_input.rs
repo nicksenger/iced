@@ -536,9 +536,11 @@ where
     });
 
     if let Some(icon) = icon {
+        let mut content = [0; 4];
+
         let icon_text = Text {
             line_height,
-            content: &icon.code_point.to_string(),
+            content: icon.code_point.encode_utf8(&mut content) as &_,
             font: icon.font,
             size: icon.size.unwrap_or_else(|| renderer.default_size()),
             bounds: Size::new(f32::INFINITY, text_bounds.height),

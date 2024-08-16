@@ -171,7 +171,7 @@ pub trait Application: Sized {
         Self: 'static,
     {
         #[allow(clippy::needless_update)]
-        let renderer_settings = crate::renderer::Settings {
+        let renderer_settings = crate::graphics::Settings {
             default_font: settings.default_font,
             default_text_size: settings.default_text_size,
             antialiasing: if settings.antialiasing {
@@ -179,7 +179,7 @@ pub trait Application: Sized {
             } else {
                 None
             },
-            ..crate::renderer::Settings::default()
+            ..crate::graphics::Settings::default()
         };
 
         Ok(crate::shell::multi_window::run::<
